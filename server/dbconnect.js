@@ -31,7 +31,7 @@ const UserRegistration = async (req, res) => {
 const SearchElementbyName = async (req, res) => {
     try {
         const { name } = req.params;
-        const res2 = await pool.query("SELECT * FROM substancedata WHERE name = $1 ORDER BY elementnumber ASC", [name]);
+        const res2 = await pool.query("SELECT * FROM substancedata WHERE  LOWER(name) like '%' || LOWER($1) || '%' ORDER BY elementnumber ASC", [name]);
         res.json(res2.rows)
     } catch (err) {
         res.json(err.message);
