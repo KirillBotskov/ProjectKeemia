@@ -57,7 +57,7 @@ const MainPage = () => {
         e.preventDefault();
         try {
             const body = { elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd, qtyAdd, usernameAdd };
-            if (elementnumAdd.length === 0 || elementnameAdd.length === 0 || casAdd.length === 0 || formulaAdd.length === 0 || unitsAdd.length === 0 || typeAdd.length === 0 || qtyAdd.length === 0 || usernameAdd.length === 0) {
+            if (elementnumAdd.length === 0 || elementnameAdd.length === 0 || casAdd.length === 0 || formulaAdd.length === 0 || typeAdd.length === 0 || unitsAdd.length === 0 || qtyAdd.length === 0 || usernameAdd.length === 0) {
                 setAddAlert(true);
                 setAddSuccess(false);
             }
@@ -168,7 +168,6 @@ const MainPage = () => {
                                 <th scope="col">Units</th>
                                 <th scope="col">CAS</th>
                                 <th scope="col">Date add</th>
-                                <th scope="col">Status</th>
                                 <th scope="col">User</th>
                                 <th scope="col"></th>
                             </tr>
@@ -184,7 +183,6 @@ const MainPage = () => {
                                     <td>{value.units}</td>
                                     <td><a href={value.cas} class="btn btn-success btn-sm" target="_blank">CAS info</a></td>
                                     <td>{value.dateadd}</td>
-                                    <td>{value.status}</td>
                                     <td>{value.username}</td>
                                     <td>
                                         <button className="btn btn-danger shadow btn-sm" data-bs-toggle="modal" data-bs-target="#del" value={value.addid} onClick={e => setAddIdUpd(e.target.value)}>Delete</button>
@@ -210,21 +208,25 @@ const MainPage = () => {
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter element number: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check element number!!!</small>
                                                         <input name="num" placeholder="Number..." className="form-control my-1" value={elementnumAdd} onChange={e => setElementnumAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter element name: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check element name!!!</small>
                                                         <input name="element" placeholder="Name..." className="form-control my-1" value={elementnameAdd} onChange={e => setElementnameAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter cas link: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check cas link!!!</small>
                                                         <input name="cas" placeholder="Cas link..." className="form-control my-1" value={casAdd} onChange={e => setCasAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter element formula: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check element formula!!!</small>
                                                         <input name="formula" placeholder="Element formula..." className="form-control my-1" value={formulaAdd} onChange={e => setFormulaAdd(e.target.value)} />
                                                     </div>
                                                 </div>
@@ -232,21 +234,38 @@ const MainPage = () => {
                                                 <div class="col-md-6">
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter qty: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check qty!!!</small>
                                                         <input name="qty" placeholder="Qty..." className="form-control my-1" value={qtyAdd} onChange={e => setQtyAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
-                                                        <label class="form-label mt-2"><strong>Enter units: </strong></label>
-                                                        <input name="units" placeholder="Units..." className="form-control my-1" value={unitsAdd} onChange={e => setUnitsAdd(e.target.value)} />
+                                                        <label class="form-label mt-2"><strong>Select units: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check units!!!</small>
+                                                        <select class="form-select my-1" value={unitsAdd} onChange={e => setUnitsAdd(e.target.value)}>
+                                                            <option selected>Choose...</option>
+                                                            <option value="g">g</option>
+                                                            <option value="kg">kg</option>
+                                                            <option value="t">t</option>
+                                                            <option value="ml">ml</option>
+                                                            <option value="l">l</option>
+                                                        </select>
+                                                        <input name="units" placeholder="Or add your units..." className="form-control my-1" value={unitsAdd} onChange={e => setUnitsAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
-                                                        <label class="form-label mt-2"><strong>Enter type: </strong></label>
-                                                        <input name="type" placeholder="Type..." className="form-control my-1" value={typeAdd} onChange={e => setTypeAdd(e.target.value)} />
+                                                        <label class="form-label mt-2"><strong>Select type: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check type!!!</small>
+                                                        <select class="form-select my-1" value={typeAdd} onChange={e => setTypeAdd(e.target.value)}>
+                                                            <option selected>Choose...</option>
+                                                            <option value="organic">organic</option>
+                                                            <option value="inorganic">inorganic</option>
+                                                        </select>
+                                                        <input name="ензу" placeholder="Or add your type..." className="form-control my-1" value={typeAdd} onChange={e => setTypeAdd(e.target.value)} />
                                                     </div>
 
                                                     <div class="form-group">
                                                         <label class="form-label mt-2"><strong>Enter your username: </strong></label>
+                                                        <small class="text-danger" style={{ display: addalert ? "block" : "none" }}>Check username!!!</small>
                                                         <input name="username" placeholder="Username..." className="form-control my-1" value={usernameAdd} onChange={e => setUsernameAdd(e.target.value)} />
                                                     </div>
                                                 </div>
