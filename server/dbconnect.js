@@ -19,10 +19,38 @@ const UserAuthentication = async (req, res) => {
     }
 };
 
+const UpdateUserStatusLogin = async (req, res) => {
+    try {
+        const { address,pass } = req.params;
+        await pool.query("UPDATE users SET userstatus = 1 WHERE userstatus = 0 and address = $1 and pass = $2", [address,pass]);
+        res.json("Was updated!");
+    } catch (err) {
+        console.error(err.message);
+    }
+};
+
+const UpdateUserStatusExit = async (req, res) => {
+    try {
+        await pool.query("UPDATE users SET userstatus = 0 WHERE userstatus = 1");
+        res.json("Was updated!");
+    } catch (err) {
+        console.error(err.message);
+    }
+};
+
 const UserRegistration = async (req, res) => {
     const { addressReg, passReg, usernameReg } = req.body;
     try {
         await pool.query("INSERT INTO users (address,pass,username) VALUES ($1,$2,$3)", [addressReg, passReg, usernameReg]);
+    } catch (err) {
+        res.json(err.message);
+    }
+};
+
+const GetChemElement = async (req, res) => {
+    try {
+        const res2 = await pool.query("SELECT name FROM substancedata");
+        res.json(res2.rows)
     } catch (err) {
         res.json(err.message);
     }
@@ -49,9 +77,9 @@ const GetAllElements = async (req, res) => {
 
 const AddNewElement = async (req, res) => {
     try {
-        const { elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd, qtyAdd, usernameAdd } = req.body;
+        const { elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd, qtyAdd } = req.body;
         await pool.query("INSERT INTO substance VALUES (default,$1,$2,$3,$4,$5,$6)", [elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd]);
-        await pool.query("INSERT INTO addchemicalelements(addid,dateadd,qty,userid,substanceid) VALUES (default,current_date,$1,(SELECT userid FROM users WHERE username = $2),(SELECT max(substanceid) FROM substance))", [qtyAdd, usernameAdd]);
+        await pool.query("INSERT INTO addchemicalelements(addid,dateadd,qty,userid,substanceid) VALUES (default,current_date,$1,(SELECT userid FROM users WHERE userstatus = 1),(SELECT max(substanceid) FROM substance))", [qtyAdd]);
     } catch (err) {
         res.json(err.message);
     }
@@ -69,8 +97,8 @@ const UpdateElementStatus = async (req, res) => {
 
 const AddElementToSpendTable = async (req, res) => {
     try {
-        const { commentDel, usernameDel, addidUpd } = req.body;
-        await pool.query("INSERT INTO chemicalelementsspend VALUES(default,current_date,$1,(SELECT userid FROM users WHERE username = $2),(SELECT substanceid from substance WHERE substanceid=$3),(SELECT addid from addchemicalelements WHERE substanceid=$3))", [commentDel, usernameDel, addidUpd]);
+        const { commentDel, addidUpd } = req.body;
+        await pool.query("INSERT INTO chemicalelementsspend VALUES(default,current_date,$1,(SELECT userid FROM users WHERE userstatus = 1),(SELECT substanceid from substance WHERE substanceid=$2),(SELECT addid from addchemicalelements WHERE substanceid=$2))", [commentDel, addidUpd]);
     } catch (err) {
         res.json(err.message);
     }
@@ -99,7 +127,10 @@ const ClearDeletedElementsTable = async (req, res) => {
 
 module.exports = {
     UserAuthentication,
+    UpdateUserStatusLogin,
+    UpdateUserStatusExit,
     UserRegistration,
+    GetChemElement,
     SearchElementbyName,
     GetAllElements,
     AddNewElement,
