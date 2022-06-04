@@ -12,8 +12,17 @@ app.set('json spaces', 2)
 // http://localhost:5000/keemia/user/authentication/:address/:pass
 app.get('/keemia/user/authentication/:addressLog/:passLog', db.UserAuthentication);
 
+// http://localhost:5000/keemia/update/user/status/:address/:pass
+app.put('/keemia/update/user/status/:address/:pass', db.UpdateUserStatusLogin);
+
+// http://localhost:5000/keemia/update/user/status/exit
+app.put('/keemia/update/user/status/exit', db.UpdateUserStatusExit);
+
 // http://localhost:5000/keemia/user/registration
 app.post('/keemia/user/registration', db.UserRegistration);
+
+// http://localhost:5000/keemia/get/chemelement
+app.get('/keemia/get/chemelement', db.GetChemElement);
 
 // http://localhost:5000/keemia/get/element/:name
 app.get('/keemia/get/element/:name', db.SearchElementbyName);
