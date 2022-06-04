@@ -1,16 +1,15 @@
 import React, { Fragment, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { validate, res } from "react-email-validator";
 
 const LoginInput = () => {
-
-  // Создаются различные хуки от различных библиотек
-  // useNavigate() - это хук библиотеки react-router-dom нужен для реализации перехода на новую страницу
-  // useState() - это хук нужен для изменения состояния переменой имеет два элемента первый постояный второй нужен для обновления состояния
   const navigate = useNavigate();
+
   const [logshow, setLogShow] = useState(false);
   const [logsuccess, setLogSuccess] = useState(false);
   const [incorrectlog, setIncorrectLog] = useState(false);
   const [regshow, setRegShow] = useState(false);
+  const [addressalert, setAddressAlert] = useState(false);
 
   const [addressReg, setAddressReg] = useState("");
   const [passReg, setPassReg] = useState("");
@@ -21,19 +20,24 @@ const LoginInput = () => {
 
   const [userState, setUserAuthentication] = useState("");
 
-  // Функция для авторизации пользователя делает запрос на сервер через соответствующий запрос в базу данных
-  // Сохраняет получаемые с сервера значения в json
   const UserAuthentication = async e => {
     e.preventDefault();
     try {
       const response1 = await fetch(`http://localhost:5000/keemia/user/authentication/${addressLog}/${passLog}`);
       setUserAuthentication(await response1.json());
+      const body = { addressLog, passLog };
+      fetch(`http://localhost:5000/keemia/update/user/status/${addressLog}/${passLog}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        }
+      );
     } catch (err) {
       console.error(err.message);
     }
   }
- 
-  // Функция служит для того что бы осуществлять проверку при авторизации правильность заполняемых полей а также проверяет правильно ли вводится логин и пароль
+
   const GoNewPage = async e => {
     e.preventDefault();
     try {
@@ -62,7 +66,6 @@ const LoginInput = () => {
     }
   };
 
-  // Функция релизует регистрацию нового пользователя делая запрос на сервер через который путем команды INSERT добавлет нового пользователя в базу данных
   const UserRegistration = e => {
     e.preventDefault();
     try {
@@ -70,23 +73,31 @@ const LoginInput = () => {
       if (usernameReg.length === 0 || addressReg.length === 0 || passReg.length === 0) {
         console.log("Reg Empty value")
         setRegShow(true);
+        setAddressAlert(false);
       }
       else {
-        fetch(`http://localhost:5000/keemia/user/registration`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body)
-        });
-        window.location = "/";
-        console.log("Reg Not Empty value");
-        setRegShow(false);
+        validate(addressReg)
+        if (res) {
+          console.log("Reg Not Empty value");
+          setRegShow(false);
+          setAddressAlert(false);
+          fetch(`http://localhost:5000/keemia/user/registration`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+          window.location = "/";
+        } else {
+          console.log("the email is invalid");
+          setAddressAlert(true);
+          setRegShow(false);
+        }
       }
     } catch (err) {
       console.error(err.message);
     }
   };
 
-  // Тут реализуется вся дальнейшая логика сайта
   return (
     <Fragment>
       <div className="container">
@@ -110,7 +121,6 @@ const LoginInput = () => {
               <div class="tab-pane fade active show" id="Authorization">
                 <legend>Authorization</legend>
                 <fieldset>
-
                   <div class="form-group">
                     <label class="form-label">Email address:
                       <small class="text-danger" style={{ display: logshow ? "block" : "none" }}>Check address!!!</small>
@@ -140,8 +150,10 @@ const LoginInput = () => {
                     <strong>Authorization success!</strong>
                   </div>
 
-                  <button className="btn btn-primary me-1 shadow" onClick={UserAuthentication} >Сonfirm entered data</button>
-                  <button className="btn btn-primary me-1 shadow" onClick={GoNewPage}>Login</button>
+                  <button type="button" class="btn btn-primary my-1" data-bs-toggle="collapse" data-bs-target="#login" onClick={UserAuthentication}>Сonfirm entered data</button>
+                  <div id="login" class="collapse">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#login" onClick={GoNewPage}>Login</button>
+                  </div>
 
                 </fieldset>
               </div>
@@ -156,6 +168,7 @@ const LoginInput = () => {
 
                   <div class="form-group">
                     <label class="form-label">Email address: <small class="text-danger" style={{ display: regshow ? "block" : "none" }}>Check address!!!</small></label>
+                    <small class="text-danger" style={{ display: addressalert ? "block" : "none" }}>The email is invalid!!!</small>
                     <input type="email" class="form-control my-1 shadow" aria-describedby="emailHelp" placeholder="Enter email" value={addressReg} onChange={e => setAddressReg(e.target.value)} />
                   </div>
 
