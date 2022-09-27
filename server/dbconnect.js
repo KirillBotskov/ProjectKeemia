@@ -1,40 +1,35 @@
 const Pool = require('pg').Pool
+const jwt = require('jsonwebtoken');
+const jwtaccesskey = 'keemia-secret';
 
 const pool = new Pool({
-    user: 't193085',
+    user: 't193094',
     host: 'dev.vk.edu.ee',
-    database: 'KeemiaProject',
-    password: 't193085',
+    database: 'KeemiaProject2',
+    password: 't193094',
     port: 5432,
 });
 
 const UserAuthentication = async (req, res) => {
     try {
-        const { addressLog } = req.params;
-        const { passLog } = req.params;
-        const res1 = await pool.query("SELECT username FROM users WHERE address = $1 AND pass = $2", [addressLog, passLog]);
-        res.json(res1.rows)
+        const { addressLog, passLog } = req.body;
+        const res1 = await pool.query("SELECT userid, username, address FROM users WHERE address = $1 AND pass = $2", [addressLog, passLog]);
+        const result = res1.rows;
+        if (result.length != 0) {
+            jwt.sign({ res1 }, jwtaccesskey, { expiresIn: "2h" }, (err, accesstoken) => {
+                if (err) {
+                    res.json("Something went wrong")
+                }
+                res.send({ result, auth: accesstoken });
+                //res.send(result);
+            });
+        }
+        else {
+            res.json("Username or password incorrect")
+        }
+
     } catch (err) {
         res.json(err.message);
-    }
-};
-
-const UpdateUserStatusLogin = async (req, res) => {
-    try {
-        const { address,pass } = req.params;
-        await pool.query("UPDATE users SET userstatus = 1 WHERE userstatus = 0 and address = $1 and pass = $2", [address,pass]);
-        res.json("Was updated!");
-    } catch (err) {
-        console.error(err.message);
-    }
-};
-
-const UpdateUserStatusExit = async (req, res) => {
-    try {
-        await pool.query("UPDATE users SET userstatus = 0 WHERE userstatus = 1");
-        res.json("Was updated!");
-    } catch (err) {
-        console.error(err.message);
     }
 };
 
@@ -77,9 +72,9 @@ const GetAllElements = async (req, res) => {
 
 const AddNewElement = async (req, res) => {
     try {
-        const { elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd, qtyAdd } = req.body;
+        const { elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd, qtyAdd, useridAdd } = req.body;
         await pool.query("INSERT INTO substance VALUES (default,$1,$2,$3,$4,$5,$6)", [elementnumAdd, elementnameAdd, casAdd, formulaAdd, unitsAdd, typeAdd]);
-        await pool.query("INSERT INTO addchemicalelements(addid,dateadd,qty,userid,substanceid) VALUES (default,current_date,$1,(SELECT userid FROM users WHERE userstatus = 1),(SELECT max(substanceid) FROM substance))", [qtyAdd]);
+        await pool.query("INSERT INTO addchemicalelements(addid,dateadd,qty,userid,substanceid) VALUES (default,current_date,$1,$2,(SELECT max(substanceid) FROM substance))", [qtyAdd, useridAdd]);
     } catch (err) {
         res.json(err.message);
     }
@@ -97,8 +92,8 @@ const UpdateElementStatus = async (req, res) => {
 
 const AddElementToSpendTable = async (req, res) => {
     try {
-        const { commentDel, addidUpd } = req.body;
-        await pool.query("INSERT INTO chemicalelementsspend VALUES(default,current_date,$1,(SELECT userid FROM users WHERE userstatus = 1),(SELECT substanceid from substance WHERE substanceid=$2),(SELECT addid from addchemicalelements WHERE substanceid=$2))", [commentDel, addidUpd]);
+        const { commentDel, addidUpd, useridAdd } = req.body;
+        await pool.query("INSERT INTO chemicalelementsspend VALUES(default,current_date,$1,$2,(SELECT substanceid from substance WHERE substanceid=$3),(SELECT addid from addchemicalelements WHERE substanceid=$3))", [commentDel, useridAdd, addidUpd]);
     } catch (err) {
         res.json(err.message);
     }
@@ -125,11 +120,27 @@ const ClearDeletedElementsTable = async (req, res) => {
     }
 };
 
+function verityToken(req,resp,next){
+    let token = req.headers['authorization'];
+    if(token){
+        token = token.split(' ')[1];
+        jwt.verify(token,jwtaccesskey,(err,valid)=>{
+            if(err){
+                resp.status(401).send({result: 'Please provide valid token'})
+            }else{
+                next();
+            }
+        })
+    }else{
+        resp.status(401).send({result: 'Please provide token'})
+    }
+}
+
+
 module.exports = {
     UserAuthentication,
-    UpdateUserStatusLogin,
-    UpdateUserStatusExit,
     UserRegistration,
+    verityToken,
     GetChemElement,
     SearchElementbyName,
     GetAllElements,
