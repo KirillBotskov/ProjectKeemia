@@ -12,4 +12,4 @@ Server:
 Client:
 1. npx create-react-app
 2. npm i react-router-dom
-3. npm install react-email-validator
+3. npm install jsonwebtoken
