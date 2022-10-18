@@ -14,3 +14,5 @@ Client:
 1. npx create-react-app
 2. npm i react-router-dom
 3. npm install react-toastify
+4. npm i react-bootstrap-table-next --save --legacy-peer-deps
+5. npm i react-bootstrap-table2-paginator --save --legacy-peer-deps
